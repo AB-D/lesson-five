@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView, UpdateView, RedirectView
 from django.core.urlresolvers import reverse
 
 
@@ -36,35 +36,13 @@ class EntryCreateView(CreateView):
     form_class = EntryForm
     template_name = 'entries.html'
 
-    def get_context_data(self, **Kwargs):
+    def get_context_data(self, **kwargs):
         context = super(EntryCreateView, self).get_context_data(**kwargs)
         context['entry_list'] = self.model.objects.all()
         return context
 
     def get_success_url(self):
-        return reverse('entry_list')
-
-def entries(request):
-    if request.method == 'POST':
-        # Create our form object with our POST data
-        entry_form = EntryForm(request.POST)
-        if entry_form.is_valid():
-            # If the form is valid, let's create and Entry with the submitted data
-            entry = Entry()
-            entry.start = entry_form.cleaned_data['start']
-            entry.stop = entry_form.cleaned_data['stop']
-            entry.project = entry_form.cleaned_data['project']
-            entry.description = entry_form.cleaned_data['description']
-            entry.save()
-            return redirect('entry-list')
-    else:
-        entry_form = EntryForm()
-
-    entry_list = Entry.objects.all()
-    return render(request, 'entries.html', {
-        'entry_list': entry_list,
-        'entry_form': entry_form,
-    })
+        return reverse('entry-list')
 
 
 class ProjectCreateView(CreateView):
@@ -88,5 +66,9 @@ class ProjectUpdateView(UpdateView):
 
     def get_success_url(self):
         return reverse('project-list')
+
+
+
+
 
 
