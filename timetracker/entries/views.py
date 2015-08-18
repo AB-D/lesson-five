@@ -1,52 +1,48 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import CreateView, UpdateView
+from django.core.urlresolvers import reverse
+
 
 from .forms import EntryForm, ProjectForm, ClientForm
 from .models import Client, Entry, Project
 
 
-def clients(request):
-    if request.method == 'POST':
-        # Create our form object with our POST data
-        form = ClientForm(request.POST)
-        if form.is_valid():
-            # If the form is valid, create a client with submitted data
-            # Below is the shortcut equivalent of:
-            # client = Client()
-            # client.name = form.cleaned_data['name']
-            # client.save()
-            # Sometimes you don't want to save the object until the end,
-            # sometimes you don't care!
-            client = Client.objects.create(name=form.cleaned_data['name'])
-            return redirect('client-list')
-    else:
-        form = ClientForm()
+class ClientCreateView(CreateView):
+    model = Client
+    form_class = ClientForm
+    template_name = 'clients.html'
 
-    client_list = Client.objects.all()
-    return render(request, 'clients.html', {
-        'client_list': client_list,
-        'form': form,
-    })
+    def get_context_data(self, **kwargs):
+        context = super(ClientCreateView, self).get_context_data(**kwargs)
+        context['client_list'] = self.model.objects.all()
+        return context
+
+    def get_success_url(self):
+        return reverse("client-list")
 
 
-def client_detail(request, pk):
-    client = get_object_or_404(Client, pk=pk)
+class ClientUpdateView(UpdateView):
+    model = Client
+    form_class = ClientForm
+    template_name = 'client_detail.html'
 
-    if request.method == 'POST':
-        form = ClientForm(request.POST)
-        if form.is_valid():
-            # Update client details
-            client.name = form.cleaned_data['name']
-            client.save()
-            return redirect('client-list')
-    else:
-        # Initialise form with client data
-        form = ClientForm(initial={'name': client.name})
+    def get_success_url(self):
+        return reverse('client-list')
 
-    return render(request, 'client_detail.html', {
-        'client': client,
-        'form': form,
-    })
 
+
+class EntryCreateView(CreateView):
+    model = Entry
+    form_class = EntryForm
+    template_name = 'entries.html'
+
+    def get_context_data(self, **Kwargs):
+        context = super(EntryCreateView, self).get_context_data(**kwargs)
+        context['entry_list'] = self.model.objects.all()
+        return context
+
+    def get_success_url(self):
+        return reverse('entry_list')
 
 def entries(request):
     if request.method == 'POST':
@@ -71,43 +67,26 @@ def entries(request):
     })
 
 
-def projects(request):
-    if request.method == 'POST':
-        # Create our form object with our POST data
-        form = ProjectForm(request.POST)
-        if form.is_valid():
-            Project.objects.create(
-                name=form.cleaned_data['name'],
-                client=form.cleaned_data['client']
-            )
-            return redirect('project-list')
-    else:
-        form = ProjectForm()
+class ProjectCreateView(CreateView):
+    model = Project
+    form_class = ProjectForm
+    template_name = 'projects.html'
 
-    project_list = Project.objects.all()
-    return render(request, 'projects.html', {
-        'project_list': project_list,
-        'form': form
-    })
+    def get_context_data(self, **kwargs):
+        context = super(ProjectCreateView, self).get_context_data(**kwargs)
+        context['project_list'] = self.model.objects.all()
+        return context
+
+    def get_success_url(self):
+        return reverse('project-list')
 
 
-def project_detail(request, pk):
-    project = get_object_or_404(Project, pk=pk)
+class ProjectUpdateView(UpdateView):
+    model = Project
+    form_class = ProjectForm
+    template_name = 'project_detail.html'
 
-    if request.method == 'POST':
-        form = ProjectForm(request.POST)
-        if form.is_valid():
-            # Update project details
-            project.name = form.cleaned_data['name']
-            project.client=form.cleaned_data['client']
-            project.save()
-            return redirect('project-list')
-    else:
-        # Initialise form with project data
-        form = ProjectForm(initial={'name': project.name, 'client': project.client})
+    def get_success_url(self):
+        return reverse('project-list')
 
-    project = get_object_or_404(Project, pk=pk)
-    return render(request, 'project_detail.html', {
-        'project': project,
-        'form': form,
-    })
+
